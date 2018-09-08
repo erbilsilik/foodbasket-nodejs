@@ -1,19 +1,34 @@
-var server = require("http").createServer();
+'use strict';
 
-var io = require("socket.io")(server);
+const express = require('express');
+const Redis = require('ioredis');
 
-var Redis = require("ioredis");
-var redis = new Redis({
+// Constants
+const PORT = 8080;
+const HOST = '0.0.0.0';
+
+//App
+const app = express();
+app.get('/', (req, res) => {
+  res.send('kwadk');
+});
+
+const redis = new Redis({
   host: 'redis'
 });
 
-redis.subscribe("test-channel");
-
-redis.on("message", function (channel, message) {
-  console.log(channel, message);
-  // message = JSON.parse(message);
-
-  // io.emit(channel + ':' + message.event, message.data);
+redis.on('message', (channel, message) => {
+  console.log(`Received the following message from ${channel}: ${message}`);
 });
 
-server.listen(4000);
+const channel = 'test-channel';
+
+redis.subscribe(channel, (error, count) => {
+  if (error) {
+    throw new Error(error);
+  }
+  console.log(`Subscribed to ${count} channel. Listening for updates on the ${channel} channel.`);
+});
+
+app.listen(PORT, HOST);
+console.log(`Running on http://${HOST}:${PORT}`);
