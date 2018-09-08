@@ -9,26 +9,37 @@ const HOST = '0.0.0.0';
 
 //App
 const app = express();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+
+//Whenever someone connects this gets executed
+io.on('connection', function (socket) {
+  console.log('A user connected');
+
+  //Whenever someone disconnects this piece of code executed
+  socket.on('disconnect', function () {
+    console.log('A user disconnected');
+  });
+});
+
+
 app.get('/', (req, res) => {
-  res.send('kwadk');
+  res.sendFile('public/index.html', {
+    root: __dirname
+  });
 });
 
 const redis = new Redis({
   host: 'redis'
 });
 
-redis.on('message', (channel, message) => {
-  console.log(`Received the following message from ${channel}: ${message}`);
+redis.psubscribe('*', function (err, count) {});
+
+redis.on('pmessage', function (subscribed, channel, message) {
+  console.log(channel);
+  message = JSON.parse(message);
+  io.emit(channel, channel);
 });
 
-const channel = 'test-channel';
-
-redis.subscribe(channel, (error, count) => {
-  if (error) {
-    throw new Error(error);
-  }
-  console.log(`Subscribed to ${count} channel. Listening for updates on the ${channel} channel.`);
-});
-
-app.listen(PORT, HOST);
+http.listen(PORT, HOST);
 console.log(`Running on http://${HOST}:${PORT}`);

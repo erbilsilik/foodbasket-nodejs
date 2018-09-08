@@ -1,1 +1,18 @@
-<div id="root"></div>
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Hello world</title>
+</head>
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+    var socket = io();
+    socket.on('restaurant_id.5', function (data) {
+        console.log(data);
+    });
+</script>
+
+<body>Hello world</body>
+
+</html>
