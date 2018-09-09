@@ -35,10 +35,13 @@ const redis = new Redis({
 
 redis.psubscribe('*', function (err, count) {});
 
-redis.on('pmessage', function (subscribed, channel, message) {
-  console.log(channel);
-  message = JSON.parse(message);
-  io.emit(channel, channel);
+redis.on('pmessage', function (subscribed, channel, data) {
+  data = JSON.parse(data);
+  console.log(data)
+  io.emit(channel, {
+    channel,
+    data
+  });
 });
 
 http.listen(PORT, HOST);
